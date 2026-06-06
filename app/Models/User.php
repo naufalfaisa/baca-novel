@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -38,6 +39,31 @@ class User extends Authenticatable
     public function authorApplication(): HasOne
     {
         return $this->hasOne(AuthorApplication::class);
+    }
+
+    public function novels(): HasMany
+    {
+        return $this->hasMany(Novel::class, 'author_id');
+    }
+
+    public function bookmarks(): HasMany
+    {
+        return $this->hasMany(Bookmark::class);
+    }
+
+    public function votes(): HasMany
+    {
+        return $this->hasMany(Vote::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function readingHistories(): HasMany
+    {
+        return $this->hasMany(ReadingHistory::class);
     }
 
     /**
