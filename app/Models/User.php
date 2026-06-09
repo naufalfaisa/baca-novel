@@ -66,6 +66,33 @@ class User extends Authenticatable
         return $this->hasMany(ReadingHistory::class);
     }
 
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function activeSubscription(): ?Subscription
+    {
+        return $this->subscriptions()
+            ->where('status', 'paid')
+            ->where('expires_at', '>', now())
+            ->latest('expires_at')
+            ->first();
+    }
+
+    public function isPremium(): bool
+    {
+        if ($this->role === 'admin') {
+            return true;
+        }
+        return $this->activeSubscription() !== null;
+    }
+
+    public function isAdFree(): bool
+    {
+        return $this->isPremium();
+    }
+
     /**
      * Get the attributes that should be cast.
      *
