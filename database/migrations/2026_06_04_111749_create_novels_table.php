@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('novels', function (Blueprint $table) {
             $table->id();
             $table->foreignId('author_id')->constrained('users')->onDelete('cascade');
+            $table->string('author_name')->nullable()->after('author_id');
             $table->string('title');
             $table->string('slug')->unique();
             $table->text('synopsis')->nullable();
