@@ -12,7 +12,16 @@ class Novel extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['author_id', 'title', 'slug', 'synopsis', 'cover_image', 'view_count', 'status'];
+    protected $fillable = [
+        'author_id',
+        'author_name',
+        'title',
+        'slug',
+        'synopsis',
+        'cover_image',
+        'view_count',
+        'status'
+    ];
 
     public function author(): BelongsTo
     {
@@ -42,5 +51,10 @@ class Novel extends Model
     public function genres(): BelongsToMany
     {
         return $this->belongsToMany(Genre::class);
+    }
+
+    public function getAuthorNameAttribute(): string
+    {
+        return $this->attributes['author_name'] ?? $this->author?->name ?? 'Unknown Author';
     }
 }
