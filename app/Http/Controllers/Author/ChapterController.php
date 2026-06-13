@@ -10,6 +10,9 @@ use App\Models\Novel;
 
 class ChapterController extends Controller
 {
+    /**
+     * Show the form to add a new chapter.
+     */
     public function create(Novel $novel)
     {
         $this->authorize('modify', $novel);
@@ -17,6 +20,9 @@ class ChapterController extends Controller
         return view('author.chapters.create', compact('novel'));
     }
 
+    /**
+     * Store a new chapter under the given novel.
+     */
     public function store(StoreChapterRequest $request, Novel $novel)
     {
         $this->authorize('modify', $novel);
@@ -26,6 +32,9 @@ class ChapterController extends Controller
         return redirect()->route('author.novels.show', $novel)->with('status', 'Chapter added.');
     }
 
+    /**
+     * Show the form to edit a chapter.
+     */
     public function edit(Novel $novel, Chapter $chapter)
     {
         $this->authorize('modify', $novel);
@@ -34,6 +43,9 @@ class ChapterController extends Controller
         return view('author.chapters.edit', compact('novel', 'chapter'));
     }
 
+    /**
+     * Update an existing chapter.
+     */
     public function update(UpdateChapterRequest $request, Novel $novel, Chapter $chapter)
     {
         $this->authorize('modify', $novel);
@@ -44,6 +56,9 @@ class ChapterController extends Controller
         return redirect()->route('author.novels.show', $novel)->with('status', 'Chapter updated.');
     }
 
+    /**
+     * Delete a chapter.
+     */
     public function destroy(Novel $novel, Chapter $chapter)
     {
         $this->authorize('modify', $novel);

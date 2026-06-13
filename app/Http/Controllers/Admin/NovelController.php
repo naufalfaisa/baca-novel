@@ -14,6 +14,9 @@ class NovelController extends Controller
 {
     public function __construct(private readonly NovelService $novelService) {}
 
+    /**
+     * Show the form to create a new novel.
+     */
     public function create()
     {
         $genres = Genre::orderBy('name')->get();
@@ -21,6 +24,9 @@ class NovelController extends Controller
         return view('admin.novels.create', compact('genres'));
     }
 
+    /**
+     * Store a newly created novel.
+     */
     public function store(StoreNovelRequest $request)
     {
         $validated = $request->validated();
@@ -34,6 +40,9 @@ class NovelController extends Controller
         return redirect()->route('admin.dashboard')->with('status', 'Novel berhasil dibuat.');
     }
 
+    /**
+     * Display a novel with its paginated chapter list.
+     */
     public function show(Novel $novel)
     {
         $chapters = $novel->chapters()->orderBy('chapter_number')->paginate(20);
@@ -41,6 +50,9 @@ class NovelController extends Controller
         return view('admin.novels.show', compact('novel', 'chapters'));
     }
 
+    /**
+     * Show the form to edit a novel.
+     */
     public function edit(Novel $novel)
     {
         $genres         = Genre::orderBy('name')->get();
@@ -49,6 +61,11 @@ class NovelController extends Controller
         return view('admin.novels.edit', compact('novel', 'genres', 'selectedGenres'));
     }
 
+    /**
+     * Update an existing novel.
+     *
+     * Slug is only regenerated when the title has changed.
+     */
     public function update(UpdateNovelRequest $request, Novel $novel)
     {
         $validated = $request->validated();
@@ -65,6 +82,9 @@ class NovelController extends Controller
         return redirect()->route('admin.dashboard')->with('status', 'Novel berhasil diperbarui.');
     }
 
+    /**
+     * Delete a novel and its cover image from storage.
+     */
     public function destroy(Novel $novel)
     {
         $this->novelService->deleteCoverImage($novel);

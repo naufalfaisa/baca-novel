@@ -11,10 +11,14 @@ use Illuminate\Support\Facades\Auth;
 
 class NovelController extends Controller
 {
+    /**
+     * Display the novel detail page.
+     */
     public function show(string $slug)
     {
         $novel = Novel::where('slug', $slug)->with('chapters', 'genres')->firstOrFail();
 
+        // Takedown novels are hidden from non-admin users.
         if ($novel->status === 'takedown' && (! Auth::check() || Auth::user()->role !== 'admin')) {
             abort(404);
         }
@@ -26,6 +30,7 @@ class NovelController extends Controller
         $isBookmarked = false;
         $isReported   = false;
 
+        // Resolve the authenticated user's current interaction state.
         if (Auth::check()) {
             $userId       = Auth::id();
             $userVote     = Vote::where('user_id', $userId)->where('novel_id', $novel->id)->first();
@@ -36,6 +41,9 @@ class NovelController extends Controller
         return view('novels.show', compact('novel', 'upvotes', 'downvotes', 'userVote', 'isBookmarked', 'isReported'));
     }
 
+    /**
+     * Toggle the bookmark state for a novel.
+     */
     public function toggleBookmark(Novel $novel)
     {
         $userId   = Auth::id();
@@ -51,11 +59,15 @@ class NovelController extends Controller
         return back()->with('status', 'Novel added to bookmarks.');
     }
 
+    /**
+     * Cast or toggle a vote on a novel.
+     */
     public function vote(VoteRequest $request, Novel $novel)
     {
         $userId       = Auth::id();
         $existingVote = Vote::where('user_id', $userId)->where('novel_id', $novel->id)->first();
 
+        // Submitting the same type again removes the vote (toggle behavior).
         if ($existingVote && $existingVote->type === $request->type) {
             $existingVote->delete();
             return back()->with('status', 'Vote removed.');
@@ -69,6 +81,9 @@ class NovelController extends Controller
         return back()->with('status', $existingVote ? 'Vote changed.' : 'Vote casted.');
     }
 
+    /**
+     * Toggle a report flag on a novel.
+     */
     public function report(Novel $novel)
     {
         $userId = Auth::id();

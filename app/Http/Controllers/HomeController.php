@@ -14,6 +14,9 @@ class HomeController extends Controller
         'recently_updated' => 'Recently Updated',
     ];
 
+    /**
+     * Display the homepage with a searchable and sortable novel list.
+     */
     public function index(Request $request)
     {
         $search = (string) $request->query('search', '');

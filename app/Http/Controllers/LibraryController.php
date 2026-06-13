@@ -7,6 +7,9 @@ use Illuminate\View\View;
 
 class LibraryController extends Controller
 {
+    /**
+     * Display the user's personal library.
+     */
     public function index(Request $request): View
     {
         $user = $request->user();

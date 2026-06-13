@@ -26,6 +26,9 @@ class DashboardController extends Controller
         'reported'  => 'Reported',
     ];
 
+    /**
+     * Display the admin dashboard.
+     */
     public function index(Request $request)
     {
         $sort   = (string) $request->query('sort', 'new_release');
@@ -48,18 +51,23 @@ class DashboardController extends Controller
             ->paginate(20);
 
         return view('admin.dashboard', [
-            'totals'            => $this->getTotals(),
-            'novels'            => $novels,
+            'totals'              => $this->getTotals(),
+            'novels'              => $novels,
             'pendingApplications' => $pendingApplications,
-            'sort'              => $sort,
-            'status'            => $status,
-            'sortLabels'        => self::SORT_LABELS,
-            'statusLabels'      => self::STATUS_LABELS,
-            'activeSortLabel'   => self::SORT_LABELS[$sort] ?? 'New Release',
-            'activeStatusLabel' => self::STATUS_LABELS[$status] ?? 'All Status',
+            'sort'                => $sort,
+            'status'              => $status,
+            'sortLabels'          => self::SORT_LABELS,
+            'statusLabels'        => self::STATUS_LABELS,
+            'activeSortLabel'     => self::SORT_LABELS[$sort] ?? 'New Release',
+            'activeStatusLabel'   => self::STATUS_LABELS[$status] ?? 'All Status',
         ]);
     }
 
+    /**
+     * Approve a pending author application.
+     *
+     * Wrapped in a transaction to keep application status and user role in sync.
+     */
     public function approveAuthor(AuthorApplication $application)
     {
         DB::transaction(function () use ($application) {
@@ -70,6 +78,9 @@ class DashboardController extends Controller
         return back()->with('status', 'Author application approved.');
     }
 
+    /**
+     * Reject a pending author application.
+     */
     public function rejectAuthor(AuthorApplication $application)
     {
         $application->update(['status' => 'rejected']);
@@ -77,6 +88,9 @@ class DashboardController extends Controller
         return back()->with('status', 'Author application rejected.');
     }
 
+    /**
+     * Toggle a novel's status between 'published' and 'takedown'.
+     */
     public function toggleNovelStatus(Novel $novel)
     {
         $newStatus = $novel->status === 'takedown' ? 'published' : 'takedown';
@@ -87,14 +101,17 @@ class DashboardController extends Controller
         return back()->with('status', $message);
     }
 
+    /**
+     * Aggregate site-wide statistics for the dashboard header.
+     */
     private function getTotals(): array
     {
         return [
-            'users'   => User::count(),
-            'authors' => User::where('role', 'author')->count(),
-            'novels'  => Novel::count(),
+            'users'    => User::count(),
+            'authors'  => User::where('role', 'author')->count(),
+            'novels'   => Novel::count(),
             'chapters' => Chapter::count(),
-            'reads'   => Novel::sum('view_count'),
+            'reads'    => Novel::sum('view_count'),
         ];
     }
 }

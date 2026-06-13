@@ -10,10 +10,14 @@ use Illuminate\Support\Facades\Auth;
 
 class ChapterController extends Controller
 {
+    /**
+     * Display a chapter for reading.
+     */
     public function show(string $slug, int $chapterNumber)
     {
         $novel = Novel::where('slug', $slug)->firstOrFail();
 
+        // Takedown novels are hidden from non-admin users.
         if ($novel->status === 'takedown' && (! Auth::check() || Auth::user()->role !== 'admin')) {
             abort(404);
         }
@@ -35,6 +39,7 @@ class ChapterController extends Controller
             ->orderBy('chapter_number', 'asc')
             ->first();
 
+        // Track the last read chapter for authenticated users.
         if (Auth::check()) {
             ReadingHistory::updateOrCreate(
                 ['user_id' => Auth::id(), 'novel_id' => $novel->id],
@@ -45,6 +50,9 @@ class ChapterController extends Controller
         return view('chapters.show', compact('novel', 'chapter', 'previousChapter', 'nextChapter'));
     }
 
+    /**
+     * Store a new comment on a chapter.
+     */
     public function storeComment(StoreCommentRequest $request, Chapter $chapter)
     {
         $request->user()->comments()->create([
