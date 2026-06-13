@@ -45,6 +45,16 @@ class ChapterController extends Controller
                 ['user_id' => Auth::id(), 'novel_id' => $novel->id],
                 ['last_chapter_id' => $chapter->id]
             );
+
+            // Keep only the 20 most recent reading histories per user.
+            $keepIds = ReadingHistory::where('user_id', Auth::id())
+                ->latest()
+                ->take(20)
+                ->pluck('id');
+
+            ReadingHistory::where('user_id', Auth::id())
+                ->whereNotIn('id', $keepIds)
+                ->delete();
         }
 
         return view('chapters.show', compact('novel', 'chapter', 'previousChapter', 'nextChapter'));
