@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\NovelController as AdminNovelController;
 use App\Http\Controllers\Admin\ChapterController as AdminChapterController;
 use App\Http\Controllers\Author\DashboardController as AuthorDashboard;
+use App\Http\Controllers\Author\NovelController as AuthorNovelController;
+use App\Http\Controllers\Author\ChapterController as AuthorChapterController;
 use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LibraryController;
@@ -62,13 +64,19 @@ Route::middleware(['auth', CheckRole::class.':admin'])->prefix('admin')->name('a
 
 Route::middleware(['auth', CheckRole::class.':author'])->prefix('author')->name('author.')->group(function () {
     Route::get('/dashboard', [AuthorDashboard::class, 'index'])->name('dashboard');
-    Route::resource('novels', AuthorDashboard::class);
 
-    Route::get('/novels/{novel}/chapters/create', [AuthorDashboard::class, 'createChapter'])->name('chapters.create');
-    Route::post('/novels/{novel}/chapters', [AuthorDashboard::class, 'storeChapter'])->name('chapters.store');
-    Route::get('/novels/{novel}/chapters/{chapter}/edit', [AuthorDashboard::class, 'editChapter'])->name('chapters.edit');
-    Route::put('/novels/{novel}/chapters/{chapter}', [AuthorDashboard::class, 'updateChapter'])->name('chapters.update');
-    Route::delete('/novels/{novel}/chapters/{chapter}', [AuthorDashboard::class, 'destroyChapter'])->name('chapters.destroy');
+    Route::get('/novels/create', [AuthorNovelController::class, 'create'])->name('novels.create');
+    Route::post('/novels', [AuthorNovelController::class, 'store'])->name('novels.store');
+    Route::get('/novels/{novel}', [AuthorNovelController::class, 'show'])->name('novels.show');
+    Route::get('/novels/{novel}/edit', [AuthorNovelController::class, 'edit'])->name('novels.edit');
+    Route::put('/novels/{novel}', [AuthorNovelController::class, 'update'])->name('novels.update');
+    Route::delete('/novels/{novel}', [AuthorNovelController::class, 'destroy'])->name('novels.destroy');
+
+    Route::get('/novels/{novel}/chapters/create', [AuthorChapterController::class, 'create'])->name('chapters.create');
+    Route::post('/novels/{novel}/chapters', [AuthorChapterController::class, 'store'])->name('chapters.store');
+    Route::get('/novels/{novel}/chapters/{chapter}/edit', [AuthorChapterController::class, 'edit'])->name('chapters.edit');
+    Route::put('/novels/{novel}/chapters/{chapter}', [AuthorChapterController::class, 'update'])->name('chapters.update');
+    Route::delete('/novels/{novel}/chapters/{chapter}', [AuthorChapterController::class, 'destroy'])->name('chapters.destroy');
 });
 
 require __DIR__.'/auth.php';

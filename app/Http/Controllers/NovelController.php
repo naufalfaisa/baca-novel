@@ -2,35 +2,35 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\VoteRequest;
 use App\Models\Bookmark;
 use App\Models\Novel;
 use App\Models\NovelReport;
 use App\Models\Vote;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class NovelController extends Controller
 {
-    public function show($slug)
+    public function show(string $slug)
     {
         $novel = Novel::where('slug', $slug)->with('chapters', 'genres')->firstOrFail();
 
-        if ($novel->status === 'takedown' && (!Auth::check() || Auth::user()->role !== 'admin')) {
+        if ($novel->status === 'takedown' && (! Auth::check() || Auth::user()->role !== 'admin')) {
             abort(404);
         }
 
-        $upvotes = $novel->votes()->where('type', 'upvote')->count();
+        $upvotes   = $novel->votes()->where('type', 'upvote')->count();
         $downvotes = $novel->votes()->where('type', 'downvote')->count();
 
-        $userVote = null;
+        $userVote     = null;
         $isBookmarked = false;
-        $isReported = false;
+        $isReported   = false;
 
         if (Auth::check()) {
-            $userId = Auth::id();
-            $userVote = Vote::where('user_id', $userId)->where('novel_id', $novel->id)->first();
+            $userId       = Auth::id();
+            $userVote     = Vote::where('user_id', $userId)->where('novel_id', $novel->id)->first();
             $isBookmarked = Bookmark::where('user_id', $userId)->where('novel_id', $novel->id)->exists();
-            $isReported = NovelReport::where('user_id', $userId)->where('novel_id', $novel->id)->exists();
+            $isReported   = NovelReport::where('user_id', $userId)->where('novel_id', $novel->id)->exists();
         }
 
         return view('novels.show', compact('novel', 'upvotes', 'downvotes', 'userVote', 'isBookmarked', 'isReported'));
@@ -38,7 +38,7 @@ class NovelController extends Controller
 
     public function toggleBookmark(Novel $novel)
     {
-        $userId = Auth::id();
+        $userId   = Auth::id();
         $bookmark = Bookmark::where('user_id', $userId)->where('novel_id', $novel->id)->first();
 
         if ($bookmark) {
@@ -51,11 +51,9 @@ class NovelController extends Controller
         return back()->with('status', 'Novel added to bookmarks.');
     }
 
-    public function vote(Request $request, Novel $novel)
+    public function vote(VoteRequest $request, Novel $novel)
     {
-        $request->validate(['type' => 'required|in:upvote,downvote']);
-
-        $userId = Auth::id();
+        $userId       = Auth::id();
         $existingVote = Vote::where('user_id', $userId)->where('novel_id', $novel->id)->first();
 
         if ($existingVote && $existingVote->type === $request->type) {
@@ -68,8 +66,7 @@ class NovelController extends Controller
             ['type' => $request->type]
         );
 
-        $message = $existingVote ? 'Vote changed.' : 'Vote casted.';
-        return back()->with('status', $message);
+        return back()->with('status', $existingVote ? 'Vote changed.' : 'Vote casted.');
     }
 
     public function report(Novel $novel)

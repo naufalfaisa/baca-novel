@@ -12,89 +12,52 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    private const SORT_LABELS = [
+        'new_release'      => 'New Release',
+        'most_popular'     => 'Most Popular',
+        'top_rated'        => 'Top Rated',
+        'recently_updated' => 'Recently Updated',
+    ];
+
+    private const STATUS_LABELS = [
+        'all'       => 'All Status',
+        'published' => 'Published',
+        'takedown'  => 'Takedown',
+        'reported'  => 'Reported',
+    ];
+
     public function index(Request $request)
     {
-        $totals = [
-            'users' => User::count(),
-            'authors' => User::where('role', 'author')->count(),
-            'novels' => Novel::count(),
-            'chapters' => Chapter::count(),
-            'reads' => Novel::sum('view_count'),
-        ];
-
-        $sortLabels = [
-            'new_release' => 'New Release',
-            'most_popular' => 'Most Popular',
-            'top_rated' => 'Top Rated',
-            'recently_updated' => 'Recently Update'
-        ];
-
-        $statusLabels = [
-            'all' => 'All Status',
-            'published' => 'Published',
-            'takedown' => 'Takedown',
-            'reported' => 'Reported'
-        ];
-
-        $sort = (string) $request->query('sort', 'new_release');
+        $sort   = (string) $request->query('sort', 'new_release');
         $status = (string) $request->query('status', 'all');
 
-        $activeSortLabel = $sortLabels[$sort] ?? 'New Release';
-        $activeStatusLabel = $statusLabels[$status] ?? 'All Status';
-
-        $novelsQuery = Novel::query()
+        $novels = Novel::query()
             ->with('author')
-            ->withCount(['chapters', 'reports']);
-
-        $novelsQuery->when($request->filled('search'), function ($q) use ($request) {
-            $search = $request->search;
-            $q->where(function ($innerQuery) use ($search) {
-                $innerQuery->where('title', 'like', "%{$search}%")
-                    ->orWhere('synopsis', 'like', "%{$search}%");
-            });
-        });
-
-        $novelsQuery->when($status !== 'all', function ($q) use ($status) {
-            if ($status === 'reported') {
-                $q->whereHas('reports');
-            } else {
-                $q->where('status', $status);
-            }
-        });
-
-        match ($sort) {
-            'most_popular' => $novelsQuery->orderBy('view_count', 'desc'),
-            'top_rated' => $novelsQuery->withCount([
-                'votes as upvotes' => fn($q) => $q->where('type', 'upvote'),
-                'votes as downvotes' => fn($q) => $q->where('type', 'downvote'),
-            ])->orderByRaw('(upvotes - downvotes) DESC'),
-            'recently_updated' => $novelsQuery->orderBy(
-                Chapter::select('updated_at')
-                    ->whereColumn('novel_id', 'novels.id')
-                    ->latest()
-                    ->limit(1),
-                'desc'
-            )->orderBy('updated_at', 'desc'),
-            default => $novelsQuery->orderBy('created_at', 'desc'),
-        };
-
-        $novels = $novelsQuery->paginate(20)->withQueryString();
+            ->withCount(['chapters', 'reports'])
+            ->when($request->filled('search'), fn($q) => $q->where(
+                fn($q) => $q->where('title', 'like', "%{$request->search}%")
+                             ->orWhere('synopsis', 'like', "%{$request->search}%")
+            ))
+            ->filterByStatus($status)
+            ->sortBy($sort)
+            ->paginate(20)
+            ->withQueryString();
 
         $pendingApplications = AuthorApplication::with('user')
             ->where('status', 'pending')
             ->paginate(20);
 
-        return view('admin.dashboard', compact(
-            'totals',
-            'pendingApplications',
-            'novels',
-            'sort',
-            'status',
-            'sortLabels',
-            'statusLabels',
-            'activeSortLabel',
-            'activeStatusLabel'
-        ));
+        return view('admin.dashboard', [
+            'totals'            => $this->getTotals(),
+            'novels'            => $novels,
+            'pendingApplications' => $pendingApplications,
+            'sort'              => $sort,
+            'status'            => $status,
+            'sortLabels'        => self::SORT_LABELS,
+            'statusLabels'      => self::STATUS_LABELS,
+            'activeSortLabel'   => self::SORT_LABELS[$sort] ?? 'New Release',
+            'activeStatusLabel' => self::STATUS_LABELS[$status] ?? 'All Status',
+        ]);
     }
 
     public function approveAuthor(AuthorApplication $application)
@@ -110,6 +73,7 @@ class DashboardController extends Controller
     public function rejectAuthor(AuthorApplication $application)
     {
         $application->update(['status' => 'rejected']);
+
         return back()->with('status', 'Author application rejected.');
     }
 
@@ -119,6 +83,18 @@ class DashboardController extends Controller
         $novel->update(['status' => $newStatus]);
 
         $message = $newStatus === 'takedown' ? 'Novel takedown applied.' : 'Novel restored.';
+
         return back()->with('status', $message);
+    }
+
+    private function getTotals(): array
+    {
+        return [
+            'users'   => User::count(),
+            'authors' => User::where('role', 'author')->count(),
+            'novels'  => Novel::count(),
+            'chapters' => Chapter::count(),
+            'reads'   => Novel::sum('view_count'),
+        ];
     }
 }

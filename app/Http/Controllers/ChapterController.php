@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCommentRequest;
 use App\Models\Chapter;
 use App\Models\Novel;
 use App\Models\ReadingHistory;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ChapterController extends Controller
 {
-    public function show($slug, $chapterNumber)
+    public function show(string $slug, int $chapterNumber)
     {
         $novel = Novel::where('slug', $slug)->firstOrFail();
 
-        if ($novel->status === 'takedown' && (!Auth::check() || Auth::user()->role !== 'admin')) {
+        if ($novel->status === 'takedown' && (! Auth::check() || Auth::user()->role !== 'admin')) {
             abort(404);
         }
 
@@ -45,15 +45,11 @@ class ChapterController extends Controller
         return view('chapters.show', compact('novel', 'chapter', 'previousChapter', 'nextChapter'));
     }
 
-    public function storeComment(Request $request, Chapter $chapter)
+    public function storeComment(StoreCommentRequest $request, Chapter $chapter)
     {
-        $request->validate([
-            'content' => 'required|string|max:1000',
-        ]);
-
         $request->user()->comments()->create([
             'chapter_id' => $chapter->id,
-            'content' => $request->content,
+            'content'    => $request->validated('content'),
         ]);
 
         return back()->with('status', 'Comment posted.');

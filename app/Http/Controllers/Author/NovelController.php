@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Author;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreNovelRequest;
@@ -18,7 +18,7 @@ class NovelController extends Controller
     {
         $genres = Genre::orderBy('name')->get();
 
-        return view('admin.novels.create', compact('genres'));
+        return view('author.novels.create', compact('genres'));
     }
 
     public function store(StoreNovelRequest $request)
@@ -31,26 +31,32 @@ class NovelController extends Controller
         $novel = Novel::create($validated);
         $novel->genres()->sync($request->input('genres', []));
 
-        return redirect()->route('admin.dashboard')->with('status', 'Novel berhasil dibuat.');
+        return redirect()->route('author.dashboard')->with('status', 'Novel created.');
     }
 
     public function show(Novel $novel)
     {
+        $this->authorize('modify', $novel);
+
         $chapters = $novel->chapters()->orderBy('chapter_number')->paginate(20);
 
-        return view('admin.novels.show', compact('novel', 'chapters'));
+        return view('author.novels.show', compact('novel', 'chapters'));
     }
 
     public function edit(Novel $novel)
     {
+        $this->authorize('modify', $novel);
+
         $genres         = Genre::orderBy('name')->get();
         $selectedGenres = $novel->genres->pluck('id')->toArray();
 
-        return view('admin.novels.edit', compact('novel', 'genres', 'selectedGenres'));
+        return view('author.novels.edit', compact('novel', 'genres', 'selectedGenres'));
     }
 
     public function update(UpdateNovelRequest $request, Novel $novel)
     {
+        $this->authorize('modify', $novel);
+
         $validated = $request->validated();
 
         if ($request->title !== $novel->title) {
@@ -62,14 +68,16 @@ class NovelController extends Controller
         $novel->update($validated);
         $novel->genres()->sync($request->input('genres', []));
 
-        return redirect()->route('admin.dashboard')->with('status', 'Novel berhasil diperbarui.');
+        return redirect()->route('author.novels.show', $novel)->with('status', 'Novel updated.');
     }
 
     public function destroy(Novel $novel)
     {
+        $this->authorize('modify', $novel);
+
         $this->novelService->deleteCoverImage($novel);
         $novel->delete();
 
-        return redirect()->route('admin.dashboard')->with('status', 'Novel berhasil dihapus.');
+        return redirect()->route('author.dashboard')->with('status', 'Novel deleted.');
     }
 }
