@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\AuthorApplication;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,8 +17,11 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $user = $request->user();
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'authorApplication' => $user->authorApplication,
         ]);
     }
 
@@ -56,5 +60,32 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Apply as Author
+     */
+    public function applyAuthor(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->role === 'admin') {
+            return Redirect::route('profile.edit');
+        }
+
+        if ($user->role === 'author') {
+            return Redirect::route('profile.edit')->with('status', 'You are already an author.');
+        }
+
+        if ($user->authorApplication && $user->authorApplication->status === 'pending') {
+            return Redirect::route('profile.edit')->with('status', 'Your application is already pending.');
+        }
+
+        AuthorApplication::updateOrCreate(
+            ['user_id' => $user->id],
+            ['status' => 'pending']
+        );
+
+        return Redirect::route('profile.edit')->with('status', 'Application submitted to admin.');
     }
 }
