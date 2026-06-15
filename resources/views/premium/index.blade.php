@@ -31,7 +31,7 @@
 
                         <div class="text-left sm:text-right">
                             <p class="text-2xl font-bold">
-                                {{ now()->diffInDays($active->expires_at, false) }}
+                                {{ max(0, floor(now()->diffInDays($active->expires_at, false))) }}
                             </p>
                             <p class="text-sm text-gray-500">
                                 days left
