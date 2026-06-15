@@ -19,11 +19,9 @@
                         {{ __('Library') }}
                     </x-nav-link>
                     @auth
-                        @if (!Auth::user()->isPremium())
-                            <x-nav-link :href="route('subscription.index')" :active="request()->routeIs('subscription.*')">
-                                {{ __('Premium') }}
-                            </x-nav-link>
-                        @endif
+                        <x-nav-link :href="route('subscription.index')" :active="request()->routeIs('subscription.*')">
+                            {{ __('Premium') }}
+                        </x-nav-link>
                     @endauth
                 </div>
             </div>
@@ -103,11 +101,9 @@
                 {{ __('Library') }}
             </x-responsive-nav-link>
             @auth
-                @if (!Auth::user()->isPremium())
-                    <x-responsive-nav-link :href="route('subscription.index')" :active="request()->routeIs('subscription.*')">
-                        {{ __('Premium') }}
-                    </x-responsive-nav-link>
-                @endif
+                <x-responsive-nav-link :href="route('subscription.index')" :active="request()->routeIs('subscription.*')">
+                    {{ __('Premium') }}
+                </x-responsive-nav-link>
             @endauth
         </div>
 

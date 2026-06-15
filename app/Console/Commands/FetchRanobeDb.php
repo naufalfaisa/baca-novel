@@ -19,7 +19,7 @@ class FetchRanobeDbData extends Command
     {
         $path = storage_path('app/data/ranobedb_series.json');
 
-        if (File::exists($path) && !$this->option('force') && !$this->confirm('File sudah ada. Timpa?')) {
+        if (File::exists($path) && !$this->option('force') && !$this->confirm('File already exists. Overwrite?')) {
             return self::SUCCESS;
         }
 
@@ -40,7 +40,7 @@ class FetchRanobeDbData extends Command
             ->reject(function ($series) {
                 if ($this->hasExcludedTag($series)) {
                     $title = $series['title'] ?? $series['romaji'] ?? 'Unknown';
-                    $this->line("  [skip] {$title} (mengandung tag yang dikecualikan)");
+                    $this->line("  [skip] {$title} (contains excluded tags)");
                     return true;
                 }
                 return false;
