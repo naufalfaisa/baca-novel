@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+<nav x-data="{ open: false }" class="bg-white border-b border-gray-100 fixed top-0 left-0 right-0 z-50">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -19,9 +19,11 @@
                         {{ __('Library') }}
                     </x-nav-link>
                     @auth
-                        <x-nav-link :href="route('subscription.index')" :active="request()->routeIs('subscription.*')">
-                            {{ __('Premium') }}
-                        </x-nav-link>
+                        @if (in_array(Auth::user()->role, ['user', 'author']))
+                            <x-nav-link :href="route('subscription.index')" :active="request()->routeIs('subscription.*')">
+                                {{ __('Premium') }}
+                            </x-nav-link>
+                        @endif
                     @endauth
                 </div>
             </div>
@@ -101,9 +103,11 @@
                 {{ __('Library') }}
             </x-responsive-nav-link>
             @auth
-                <x-responsive-nav-link :href="route('subscription.index')" :active="request()->routeIs('subscription.*')">
-                    {{ __('Premium') }}
-                </x-responsive-nav-link>
+                @if (in_array(Auth::user()->role, ['user', 'author']))
+                    <x-responsive-nav-link :href="route('subscription.index')" :active="request()->routeIs('subscription.*')">
+                        {{ __('Premium') }}
+                    </x-responsive-nav-link>
+                @endif
             @endauth
         </div>
 

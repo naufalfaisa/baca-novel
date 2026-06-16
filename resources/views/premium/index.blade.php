@@ -29,7 +29,7 @@
                             </p>
                         </div>
 
-                        <div class="text-left sm:text-right">
+                        <div class="text-center sm:text-right">
                             <p class="text-2xl font-bold">
                                 {{ max(0, floor(now()->diffInDays($active->expires_at, false))) }}
                             </p>
