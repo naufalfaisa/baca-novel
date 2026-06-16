@@ -35,7 +35,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/novels/{novel}/report', [NovelController::class, 'report'])->name('novels.report');
 
     Route::post('/chapters/{chapter}/comment', [ChapterController::class, 'storeComment'])->name('chapters.comment');
+});
 
+Route::middleware(['auth', CheckRole::class.':user,author'])->group(function () {
     Route::get('/subscription', [SubscriptionController::class, 'index'])->name('subscription.index');
     Route::get('/subscription/success', [SubscriptionController::class, 'success'])->name('subscription.success');
     Route::post('/subscription/subscribe', [SubscriptionController::class, 'subscribe'])->name('subscription.subscribe');
