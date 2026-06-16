@@ -37,7 +37,7 @@ class NovelController extends Controller
         $novel = Novel::create($validated);
         $novel->genres()->sync($request->input('genres', []));
 
-        return redirect()->route('admin.dashboard')->with('status', 'Novel berhasil dibuat.');
+        return redirect()->route('admin.dashboard')->with('status', 'Novel created.');
     }
 
     /**
@@ -79,7 +79,7 @@ class NovelController extends Controller
         $novel->update($validated);
         $novel->genres()->sync($request->input('genres', []));
 
-        return redirect()->route('admin.dashboard')->with('status', 'Novel berhasil diperbarui.');
+        return redirect()->route('admin.dashboard')->with('status', 'Novel updated.');
     }
 
     /**
@@ -90,6 +90,6 @@ class NovelController extends Controller
         $this->novelService->deleteCoverImage($novel);
         $novel->delete();
 
-        return redirect()->route('admin.dashboard')->with('status', 'Novel berhasil dihapus.');
+        return redirect()->route('admin.dashboard')->with('status', 'Novel deleted.');
     }
 }

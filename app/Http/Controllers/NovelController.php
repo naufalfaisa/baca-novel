@@ -91,7 +91,7 @@ class NovelController extends Controller
 
         if ($report) {
             $report->delete();
-            return back()->with('status', 'Novel report dibatalkan.');
+            return back()->with('status', 'Novel report cancelled.');
         }
 
         NovelReport::create(['user_id' => $userId, 'novel_id' => $novel->id]);

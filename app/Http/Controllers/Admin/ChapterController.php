@@ -25,7 +25,7 @@ class ChapterController extends Controller
     {
         $novel->chapters()->create($request->validated());
 
-        return redirect()->route('admin.novels.show', $novel)->with('status', 'Chapter berhasil ditambahkan.');
+        return redirect()->route('admin.novels.show', $novel)->with('status', 'Chapter added.');
     }
 
     /**
@@ -43,7 +43,7 @@ class ChapterController extends Controller
     {
         $chapter->update($request->validated());
 
-        return redirect()->route('admin.novels.show', $novel)->with('status', 'Chapter berhasil diperbarui.');
+        return redirect()->route('admin.novels.show', $novel)->with('status', 'Chapter updated.');
     }
 
     /**
@@ -53,6 +53,6 @@ class ChapterController extends Controller
     {
         $chapter->delete();
 
-        return redirect()->route('admin.novels.show', $novel)->with('status', 'Chapter berhasil dihapus.');
+        return redirect()->route('admin.novels.show', $novel)->with('status', 'Chapter deleted.');
     }
 }
