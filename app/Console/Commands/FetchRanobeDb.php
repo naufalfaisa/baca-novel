@@ -55,6 +55,7 @@ class FetchRanobeDbData extends Command
             ->all();
 
         if ($data) {
+            File::ensureDirectoryExists(dirname($path));
             File::put($path, json_encode([
                 'fetched_at' => now()->toIso8601String(),
                 'count'      => count($data),
